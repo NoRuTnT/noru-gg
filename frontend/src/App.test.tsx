@@ -1,5 +1,6 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import App from "@/app/App";
+import { useAppStore } from "@/entities/app/model/app-store";
 import { useCharacterStore } from "@/entities/character/model/character-store";
 import { useDungeonStore } from "@/entities/dungeon/model/dungeon-store";
 import { usePartyStore } from "@/entities/party/model/party-store";
@@ -10,6 +11,10 @@ vi.mock("sonner", () => ({
 
 vi.mock("@/pages/main/ui/main-page", () => ({
   MainPage: () => <div>Main Page</div>,
+}));
+
+vi.mock("@/pages/about/ui/about-page", () => ({
+  AboutPage: () => <div>About Page</div>,
 }));
 
 vi.mock("@/pages/party-management/ui/party-management-page", () => ({
@@ -25,6 +30,13 @@ vi.mock("@/pages/knowledge-base/ui/knowledge-base-page", () => ({
 }));
 
 beforeEach(() => {
+  window.history.replaceState(null, "", "/");
+  useAppStore.setState({
+    activePrimaryTab: "main",
+    activePartyManagementTab: "overview",
+    activeKnowledgeBaseSection: null,
+  });
+
   useCharacterStore.setState({
     characters: [],
     isLoading: false,
@@ -53,10 +65,25 @@ describe("App", () => {
       render(<App />);
     });
 
-    expect(screen.getByRole("button", { name: "메인페이지" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "소개" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Knowledge Base" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "파티관리" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "로그분석" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "메인페이지" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "소개" })).toHaveAttribute("href", "/about");
+    expect(screen.getByRole("link", { name: "Knowledge Base" })).toHaveAttribute("href", "/knowledge-base");
+    expect(screen.getByRole("link", { name: "파티관리" })).toHaveAttribute("href", "/party-management");
+    expect(screen.getByRole("link", { name: "로그분석" })).toHaveAttribute("href", "/log-analysis");
+  });
+
+  it("opens a page from its direct URL and updates the URL through navigation", async () => {
+    window.history.replaceState(null, "", "/about");
+
+    await act(async () => {
+      render(<App />);
+    });
+
+    expect(screen.getByText("About Page")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("link", { name: "Knowledge Base" }));
+
+    expect(window.location.pathname).toBe("/knowledge-base");
+    expect(screen.getByText("Knowledge Base Page")).toBeInTheDocument();
   });
 });

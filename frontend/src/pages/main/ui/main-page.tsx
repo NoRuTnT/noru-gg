@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, BellRing, Clock3, HeartPulse } from "lucide-react";
-import { useAppStore } from "@/entities/app/model/app-store";
+import { navigateToPrimaryTab } from "@/app/primary-navigation";
 import { env } from "@/shared/config/env";
 
 const AUTO_ROTATE_MS = 5000;
@@ -87,7 +87,6 @@ const initialServiceHealth: ServiceHealthItem[] = [
 ];
 
 export function MainPage() {
-  const { setActivePrimaryTab } = useAppStore();
   const [activeIndex, setActiveIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [rotationKey, setRotationKey] = useState(0);
@@ -174,7 +173,7 @@ export function MainPage() {
       window.open(activeItem.href, "_blank", "noopener,noreferrer");
       return;
     }
-    setActivePrimaryTab(activeItem.action);
+    navigateToPrimaryTab(activeItem.action);
   };
 
   const moveSlide = (direction: "prev" | "next") => {

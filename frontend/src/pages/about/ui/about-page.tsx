@@ -1,6 +1,7 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Github, Mail } from "lucide-react";
 import { useAppStore } from "@/entities/app/model/app-store";
+import { navigateToPrimaryTab } from "@/app/primary-navigation";
 import { knowledgeHeadingTargets, knowledgeKeywordTargets } from "@/pages/knowledge-base/model/knowledge-base";
 
 const sections = [
@@ -78,7 +79,8 @@ Backend리더 포지션으로 다양한 돌발상황에 대처하며 기한내�
 NAVER Cloud Platform Certified Associate
 ADsP
 SQLD
-정보처리기사`,
+정보처리기사
+리눅스마스터 2급`,
   },
   {
     title: "■ Study.",
@@ -331,7 +333,7 @@ function tidySpacing(text: string) {
 }
 
 function FormattedContent({ content, linkKnowledge = false }: { content: string; linkKnowledge?: boolean }) {
-  const { setActivePrimaryTab, setKnowledgeBaseSection } = useAppStore();
+  const { setKnowledgeBaseSection } = useAppStore();
   const groups: { heading?: string; items: string[] }[] = [];
   for (const line of normalizeLines(content)) {
     if (subheadings.has(line)) groups.push({ heading: line, items: [] });
@@ -343,7 +345,7 @@ function FormattedContent({ content, linkKnowledge = false }: { content: string;
 
   const openKnowledgeBase = (sectionId: string) => {
     setKnowledgeBaseSection(sectionId);
-    setActivePrimaryTab("knowledge-base");
+    navigateToPrimaryTab("knowledge-base");
   };
 
   return <div className="space-y-6">

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
@@ -16,6 +16,7 @@ import { AboutPage } from "@/pages/about/ui/about-page";
 import { KnowledgeBasePage } from "@/pages/knowledge-base/ui/knowledge-base-page";
 import { PartyManagementPage } from "@/pages/party-management/ui/party-management-page";
 import { AdminAccessGate } from "@/shared/ui/admin-access-gate";
+import { getPrimaryTabForPath, navigateToPrimaryTab, primaryTabPaths } from "@/app/primary-navigation";
 
 const primaryTabs = [
   { value: "main", label: "메인페이지" },
@@ -125,10 +126,31 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const updateTabFromLocation = () => {
+      const tab = getPrimaryTabForPath(window.location.pathname);
+
+      if (!tab) {
+        window.history.replaceState(null, "", primaryTabPaths.main);
+        setActivePrimaryTab("main");
+        return;
+      }
+
+      setActivePrimaryTab(tab);
+    };
+
+    updateTabFromLocation();
+    window.addEventListener("popstate", updateTabFromLocation);
+
+    return () => {
+      window.removeEventListener("popstate", updateTabFromLocation);
+    };
+  }, [setActivePrimaryTab]);
+
   const isLoading = charactersLoading || partiesLoading || dungeonsLoading;
 
   const moveToPartyManagement = (tab: PartyManagementTab) => {
-    setActivePrimaryTab("party-management");
+    navigateToPrimaryTab("party-management");
     setActivePartyManagementTab(tab);
   };
 
@@ -169,18 +191,18 @@ function App() {
             }`}
           >
             <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-4 md:px-8 lg:flex-row lg:items-end lg:justify-between">
-              <button type="button" onClick={() => setActivePrimaryTab("main")} className="shrink-0 text-left">
+              <a href={primaryTabPaths.main} onClick={(event) => { event.preventDefault(); navigateToPrimaryTab("main"); }} className="shrink-0 text-left">
                 <img src="/norugg-logo.png" alt="Noru.gg" className="h-12 w-auto md:h-14" />
-              </button>
+              </a>
 
               <nav className="flex flex-wrap items-center gap-6 text-sm font-medium text-[#8d775f]">
                 {primaryTabs.map((tab) => {
                   const isActive = activePrimaryTab === tab.value;
                   return (
-                    <button
+                    <a
                       key={tab.value}
-                      type="button"
-                      onClick={() => setActivePrimaryTab(tab.value)}
+                      href={primaryTabPaths[tab.value]}
+                      onClick={(event) => { event.preventDefault(); navigateToPrimaryTab(tab.value); }}
                       className={`border-b pb-2 transition ${
                         isActive
                           ? "border-[#6a4a28] text-[#3f2b1a]"
@@ -188,14 +210,14 @@ function App() {
                       }`}
                     >
                       {tab.label}
-                    </button>
+                    </a>
                   );
                 })}
 
                 <div className="group relative">
-                  <button
-                    type="button"
-                    onClick={() => moveToPartyManagement("overview")}
+                  <a
+                    href={primaryTabPaths["party-management"]}
+                    onClick={(event) => { event.preventDefault(); moveToPartyManagement("overview"); }}
                     className={`border-b pb-2 transition ${
                       activePrimaryTab === "party-management"
                         ? "border-[#6a4a28] text-[#3f2b1a]"
@@ -203,21 +225,21 @@ function App() {
                     }`}
                   >
                     파티관리
-                  </button>
+                  </a>
 
                   <div className="pointer-events-none absolute right-0 top-full z-40 h-4 w-full" />
                   <div className="pointer-events-none absolute right-0 top-full z-40 pt-4 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
                     <div className="min-w-[320px] translate-y-2 rounded-[28px] border border-[#e7d5b2] bg-[#fffaf0]/97 p-2 shadow-[0_24px_60px_rgba(95,65,36,0.14)] backdrop-blur-md transition duration-200 group-hover:translate-y-0">
                       {partyMenuItems.map((item) => (
-                        <button
+                        <a
                           key={item.value}
-                          type="button"
-                          onClick={() => moveToPartyManagement(item.value)}
+                          href={primaryTabPaths["party-management"]}
+                          onClick={(event) => { event.preventDefault(); moveToPartyManagement(item.value); }}
                           className="flex w-full flex-col rounded-[20px] px-4 py-3 text-left transition hover:bg-[#f9efd9]"
                         >
                           <span className="text-sm font-semibold text-[#3f2b1a]">{item.label}</span>
                           <span className="mt-1 text-xs leading-5 text-[#7b654d]">{item.description}</span>
-                        </button>
+                        </a>
                       ))}
                     </div>
                   </div>
